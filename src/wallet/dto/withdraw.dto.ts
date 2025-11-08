@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID, IsPositive, IsNumber } from 'class-validator';
+import { IsInt, Min, IsNumber, IsPositive } from 'class-validator';
 
 export class WithdrawDto {
-  @ApiProperty({ description: 'ID do usuário de quem o gerente vai retirar o saldo' })
-  @IsUUID('4')
-  fromUserId!: string;
+  @ApiProperty({ example: 2 })
+  @IsInt()
+  @Min(1)
+  fromUserId!: number;
 
-  @ApiProperty({ description: 'Valor a retirar', example: 50.5 })
-  @IsNumber({ maxDecimalPlaces: 2 })
+  @ApiProperty({ example: 50.5 })
+  @IsNumber()
   @IsPositive()
   amount!: number;
 }

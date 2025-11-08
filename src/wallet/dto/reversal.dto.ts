@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsInt, Min } from 'class-validator';
 
 export class ReversalDto {
-  @ApiProperty({ description: 'ID da transação original a reverter' })
-  @IsUUID('4')
-  transactionId!: string;
+  @ApiProperty({ example: 3, description: 'ID da transação original' })
+  @IsInt()
+  @Min(1)
+  transactionId!: number;
 }

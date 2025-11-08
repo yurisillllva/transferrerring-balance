@@ -4,8 +4,8 @@ import { Transaction } from '../wallet/transaction.entity';
 @Entity('users')
 @Unique(['email'])
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @Column({ length: 120 })
   name!: string;

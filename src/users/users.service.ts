@@ -39,7 +39,7 @@ export class UsersService {
       .getOne();
   }
 
-  async findById(id: string): Promise<User> {
+  async findById(id: number): Promise<User> {
     const u = await this.repo.findOne({ where: { id } });
     if (!u) throw new NotFoundException('Usuário não encontrado');
     return u;

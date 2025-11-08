@@ -1,32 +1,42 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { User } from '../users/user.entity';
-
-export type TxType = 'TRANSFER' | 'REVERSAL';
-export type TxStatus = 'COMPLETED' | 'REVERSED';
 
 @Entity('transactions')
 export class Transaction {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn()   T
+  id!: number;
 
-  @ManyToOne(() => User, (u) => u.outgoing, { nullable: true, onDelete: 'SET NULL' })
-  fromUser!: User | null;
+  @ManyToOne(() => User, (u) => u.outgoing, { eager: false })
+  @JoinColumn({ name: 'fromUserId' })
+  fromUser!: User;
 
-  @ManyToOne(() => User, (u) => u.incoming, { nullable: true, onDelete: 'SET NULL' })
-  toUser!: User | null;
+  @ManyToOne(() => User, (u) => u.incoming, { eager: false })
+  @JoinColumn({ name: 'toUserId' })
+  toUser!: User;
 
   @Column({ type: 'decimal', precision: 14, scale: 2 })
   amount!: string;
 
-  @Column({ type: 'varchar', length: 16 })
-  type!: TxType;
+  @Column({ length: 30 })
+  type!: 'TRANSFER' | 'REVERSAL';
 
-  @Column({ type: 'varchar', length: 16 })
-  status!: TxStatus;
+  @Column({ length: 30 })
+  status!: 'COMPLETED' | 'REVERSED';
 
-  @Column({ type: 'uuid', nullable: true })
-  reversalOf?: string | null;
+  @Column({ type: 'int', nullable: true })   
+  reversalOf!: number | null;
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 }

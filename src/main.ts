@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import * as morgan from 'morgan';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -16,7 +16,10 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true, // <== chave da solução
+      },
     }),
   );
 
@@ -31,8 +34,8 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
-  logger.log(`🚀 API rodando em http://localhost:${port}`);
-  logger.log(`📄 Swagger em http://localhost:${port}/api/doc`);
-  logger.log(`📊 Métricas em http://localhost:${port}/metrics`);
+  logger.log(`API rodando em http://localhost:${port}`);
+  logger.log(` Swagger em http://localhost:${port}/api/doc`);
+  logger.log(`Métricas em http://localhost:${port}/metrics`);
 }
 bootstrap();

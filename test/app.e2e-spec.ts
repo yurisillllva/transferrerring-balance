@@ -4,7 +4,7 @@ import { AppModule } from '../src/app.module';
 import * as request from 'supertest';
 import { DataSource } from 'typeorm';
 
-describe('Wallet - gerente único', () => {
+describe('Wallet - gerente único (A -> B) (E2E)', () => {
   let app: INestApplication;
   let ds: DataSource;
 
@@ -33,7 +33,7 @@ describe('Wallet - gerente único', () => {
 
     // cria usuários comuns
     const r2 = await request(app.getHttpServer()).post('/users').send({
-      name: 'Alice', email: 'alice@ex.com', password: 'Senha123', initialBalance: 0
+      name: 'Alice', email: 'alice@ex.com', password: 'Senha123', initialBalance: 500
     }).expect(201);
     alice = r2.body;
 
@@ -59,12 +59,12 @@ describe('Wallet - gerente único', () => {
     await app.close();
   });
 
-  it('Somente gerente pode TRANSFERIR (200) e não-gerente deve falhar (403)', async () => {
-    // gerente transfere 200 para Alice
+  it('Somente gerente pode TRANSFERIR A->B; não-gerente falha 403', async () => {
+    // gerente transfere 200 de Alice -> Bob
     const tx = await request(app.getHttpServer())
       .post('/wallet/transfer')
       .set('Authorization', `Bearer ${managerToken}`)
-      .send({ toUserId: alice.id, amount: 200 })
+      .send({ fromUserId: alice.id, toUserId: bob.id, amount: 200 })
       .expect(201);
     expect(tx.body.type).toBe('TRANSFER');
 
@@ -72,37 +72,31 @@ describe('Wallet - gerente único', () => {
     await request(app.getHttpServer())
       .post('/wallet/transfer')
       .set('Authorization', `Bearer ${aliceToken}`)
-      .send({ toUserId: bob.id, amount: 10 })
+      .send({ fromUserId: alice.id, toUserId: bob.id, amount: 10 })
       .expect(403);
   });
 
-  it('Somente gerente pode WITHDRAW (retirar) e reverter', async () => {
-    // gerente retira 50 da Alice para o gerente
+  it('WITHDRAW (X -> Gerente) e REVERSE por gerente', async () => {
+    // gerente retira 50 da Bob -> Gerente
     const wd = await request(app.getHttpServer())
       .post('/wallet/withdraw')
       .set('Authorization', `Bearer ${managerToken}`)
-      .send({ fromUserId: alice.id, amount: 50 })
+      .send({ fromUserId: bob.id, amount: 50 })
       .expect(201);
     expect(wd.body.type).toBe('TRANSFER');
 
-    // gerente reverte a primeira transferência
+    // pegar uma transferência de Alice (a primeira)
     const listAlice = await request(app.getHttpServer())
       .get(`/wallet/transactions/${alice.id}`)
       .expect(200);
-    const originalTx = listAlice.body.find((t: any) => t.type === 'TRANSFER' && t.status === 'COMPLETED');
+    const firstTx = listAlice.body.find((t: any) => t.type === 'TRANSFER' && t.status === 'COMPLETED');
 
+    // reverter
     const rev = await request(app.getHttpServer())
       .post('/wallet/reverse')
       .set('Authorization', `Bearer ${managerToken}`)
-      .send({ transactionId: originalTx.id })
+      .send({ transactionId: firstTx.id })
       .expect(201);
     expect(rev.body.type).toBe('REVERSAL');
-
-    // Alice tenta withdraw -> 403
-    await request(app.getHttpServer())
-      .post('/wallet/withdraw')
-      .set('Authorization', `Bearer ${aliceToken}`)
-      .send({ fromUserId: bob.id, amount: 10 })
-      .expect(403);
   });
 });

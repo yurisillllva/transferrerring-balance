@@ -16,7 +16,7 @@ class ReversalDto {
 }
 exports.ReversalDto = ReversalDto;
 __decorate([
-    (0, swagger_1.ApiProperty)({ example: 3, description: 'ID da transação original' }),
+    (0, swagger_1.ApiProperty)({ description: 'ID numérico da transação a reverter', example: 6 }),
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
     __metadata("design:type", Number)

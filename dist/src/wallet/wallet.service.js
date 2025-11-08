@@ -53,8 +53,12 @@ let WalletService = class WalletService {
             await repoU.update(from.id, { balance: (fromBalance - amount).toFixed(2) });
             await repoU.update(to.id, { balance: (Number(to.balance) + amount).toFixed(2) });
             const tx = managerTx.getRepository(transaction_entity_1.Transaction).create({
-                fromUser: from, toUser: to,
-                amount: amount.toFixed(2), type: 'TRANSFER', status: 'COMPLETED'
+                fromUser: from,
+                toUser: to,
+                amount: amount.toFixed(2),
+                type: 'TRANSFER',
+                status: 'COMPLETED',
+                reversalOf: null,
             });
             return managerTx.getRepository(transaction_entity_1.Transaction).save(tx);
         });
@@ -80,29 +84,19 @@ let WalletService = class WalletService {
         const amount = Number(original.amount);
         return this.dataSource.transaction(async (managerTx) => {
             const repoU = managerTx.getRepository(user_entity_1.User);
-            const fromId = original.fromUser.id;
-            const toId = original.toUser.id;
+            const fromId = original.fromUser?.id;
+            const toId = original.toUser?.id;
             const ids = [fromId, toId].sort((a, b) => a - b);
-            const u1 = await repoU
-                .createQueryBuilder('u')
-                .setLock('pessimistic_write')
-                .where('u.id = :id', { id: ids[0] })
-                .getOne();
-            const u2 = await repoU
-                .createQueryBuilder('u')
-                .setLock('pessimistic_write')
-                .where('u.id = :id', { id: ids[1] })
-                .getOne();
-            const from = u1.id === fromId ? u1 : u2;
-            const to = u1.id === toId ? u1 : u2;
+            const u1 = await repoU.createQueryBuilder('u').setLock('pessimistic_write').where('u.id = :id', { id: ids[0] }).getOne();
+            const u2 = await repoU.createQueryBuilder('u').setLock('pessimistic_write').where('u.id = :id', { id: ids[1] }).getOne();
+            const from = (u1.id === fromId) ? u1 : u2;
+            const to = (u1.id === toId) ? u1 : u2;
             const toBalance = Number(to.balance);
             if (toBalance < amount)
-                throw new common_1.ForbiddenException('Recebedor não possui saldo suficiente para reversão');
+                throw new common_1.ForbiddenException('Recebedor não possui saldo suficiente para a reversão');
             await repoU.update(to.id, { balance: (toBalance - amount).toFixed(2) });
             await repoU.update(from.id, { balance: (Number(from.balance) + amount).toFixed(2) });
-            await managerTx.getRepository(transaction_entity_1.Transaction).update(original.id, {
-                status: 'REVERSED',
-            });
+            await managerTx.getRepository(transaction_entity_1.Transaction).update(original.id, { status: 'REVERSED' });
             const rev = managerTx.getRepository(transaction_entity_1.Transaction).create({
                 fromUser: to,
                 toUser: from,

@@ -16,29 +16,31 @@ let Transaction = class Transaction {
 };
 exports.Transaction = Transaction;
 __decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)(),
-    __metadata("design:type", Object)
-], Transaction.prototype, "T", void 0);
+    (0, typeorm_1.PrimaryGeneratedColumn)({ type: 'int' }),
+    __metadata("design:type", Number)
+], Transaction.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (u) => u.outgoing, { eager: false }),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (u) => u.outgoing, { nullable: true, onDelete: 'SET NULL' }),
     (0, typeorm_1.JoinColumn)({ name: 'fromUserId' }),
-    __metadata("design:type", user_entity_1.User)
+    __metadata("design:type", Object)
 ], Transaction.prototype, "fromUser", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (u) => u.incoming, { eager: false }),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, (u) => u.incoming, { nullable: true, onDelete: 'SET NULL' }),
     (0, typeorm_1.JoinColumn)({ name: 'toUserId' }),
-    __metadata("design:type", user_entity_1.User)
+    __metadata("design:type", Object)
 ], Transaction.prototype, "toUser", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'decimal', precision: 14, scale: 2 }),
     __metadata("design:type", String)
 ], Transaction.prototype, "amount", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 30 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 16 }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Transaction.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 30 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 16 }),
+    (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Transaction.prototype, "status", void 0);
 __decorate([

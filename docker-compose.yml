@@ -10,7 +10,7 @@ services:
       MYSQL_USER: wallet
       MYSQL_PASSWORD: wallet
     ports:
-      - "3306:3306"
+      - "3307:3306"
     command: ["--sql_mode=", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     volumes:
       - db_data:/var/lib/mysql
